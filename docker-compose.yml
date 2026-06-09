@@ -1,0 +1,99 @@
+services:
+  ### postgres database for inventory
+  db-inventory:
+    container_name: db-inventory
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ms_inventory
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ms_inventory"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  ### mysql database for orders:
+  db-orders:
+    container_name: db-orders
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ms_orders
+      MYSQL_ROOT_PASSWORD: mysqlserver2024**
+    ports:
+      - "3309:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pmysqlserver2024**"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  ### postgres database for products
+  db-products:
+    container_name: db-products
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ms_products
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ms_products"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  products-mservices:
+    container_name: products-mservices
+    build:
+      context: .
+      dockerfile: products-mservices/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db-products:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-products:5432/ms_products
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8081:8081"
+
+  inventory-mservices:
+    container_name: inventory-mservices
+    build:
+      context: .
+      dockerfile: inventory-mservices/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db-inventory:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-inventory:5432/ms_inventory
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8083:8083"
+
+  orders-mservices:
+    container_name: orders-mservices
+    build:
+      context: .
+      dockerfile: orders-mservices/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db-orders:
+        condition: service_healthy
+      inventory-mservices:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db-orders:3306/ms_orders
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: mysqlserver2024**
+      INVENTORY_SERVICE_URL: http://inventory-mservices:8083
+    ports:
+      - "8082:8082"
