@@ -18,7 +18,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final WebClient.Builder webClientBuilder;
 
-    @Value("${inventory.service.url:http://localhost:8083}")
+    @Value("${inventory.service.url:http://localhost:8080}")
     private String inventoryServiceUrl;
 
     public void placeOrder(OrderRequest orderRequest) {
