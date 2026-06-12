@@ -97,3 +97,15 @@ services:
       INVENTORY_SERVICE_URL: http://inventory-mservices:8083
     ports:
       - "8082:8082"
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - products-mservices
+      - inventory-mservices
+      - orders-mservices
+    ports:
+      - "8080:8080"
