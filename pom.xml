@@ -36,6 +36,7 @@
 
 	<!-- Begin::Section modules -->
 	<modules>
+		<module>discovery-server</module>
 		<module>api-gateway</module>
 		<module>inventory-mservices</module>
 		<module>orders-mservices</module>
