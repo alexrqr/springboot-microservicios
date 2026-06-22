@@ -1,4 +1,4 @@
-package com.mservicesdev.inventory_mservices.config;
+package com.mservicesdev.orders_mservices.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,7 +26,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/inventory/**").permitAll()
+                        .requestMatchers("/actuator/order/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
@@ -38,12 +38,15 @@ public class SecurityConfig {
         return http.build();
     }
 
-    private Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthConverter() {
+    private org.springframework.core.convert.converter.Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(new KeycloakRealmRoleConverter());
         return converter;
     }
+
+
 }
+
 
 
 class KeycloakRealmRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
