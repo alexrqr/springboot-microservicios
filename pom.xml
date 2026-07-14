@@ -41,6 +41,7 @@
 		<module>inventory-mservices</module>
 		<module>orders-mservices</module>
 		<module>products-mservices</module>
+		<module>notification-servide</module>
 	</modules>
 	<!-- End::Section modules -->
 

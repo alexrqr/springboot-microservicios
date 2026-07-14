@@ -1,11 +1,15 @@
 package com.mservicesdev.orders_mservices.services;
 
+import com.mservicesdev.orders_mservices.events.OrderEvent;
 import com.mservicesdev.orders_mservices.model.dtos.*;
 import com.mservicesdev.orders_mservices.model.entities.Order;
 import com.mservicesdev.orders_mservices.model.entities.OrderItems;
+import com.mservicesdev.orders_mservices.model.enums.OrderStatus;
 import com.mservicesdev.orders_mservices.repositories.OrderRepository;
+import com.mservicesdev.orders_mservices.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -17,6 +21,8 @@ import java.util.UUID;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final WebClient.Builder webClientBuilder;
+
+    private final KafkaTemplate<String, String> fakfaTemplate;
 
     // @Value("${inventory.service.url:http://localhost:9090}")
     @Value("lb://inventory-mservices")
@@ -44,6 +50,14 @@ public class OrderService {
             );
 
             var saveOrder = this.orderRepository.save((order));
+
+            // Envío de notificacion kafka:
+            this.fakfaTemplate.send(
+                    "orders-topic",
+                    JsonUtils.toJson(
+                            new OrderEvent(saveOrder.getOrderNumber(), saveOrder.getOrderItems().size(), OrderStatus.PLACED)
+                    )
+            );
 
             return mapToOrderResponse(saveOrder);
         } else {
