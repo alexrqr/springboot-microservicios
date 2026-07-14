@@ -1,0 +1,7 @@
+# CREDENTIALS AND DETAILS OF PROJECT:
+1. Keycloak acceso principal:
+    admin
+    admin
+2. Para conexion desde postman y generar token de acceso:
+    admin_user
+    12345678
