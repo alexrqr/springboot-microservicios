@@ -22,7 +22,7 @@ public class OrderService {
     @Value("lb://inventory-mservices")
     private String inventoryServiceUrl;
 
-    public void placeOrder(OrderRequest orderRequest) {
+    public OrderResponse placeOrder(OrderRequest orderRequest) {
 
         // Validación de stock en microservicio de inventario:
         BaseResponse result = this.webClientBuilder.build()
@@ -33,7 +33,7 @@ public class OrderService {
                 .bodyToMono(BaseResponse.class)
                 .block();
 
-        if(result != null && !result.hasError()) { // Si no hay errores continpua el proceso de regustro de orden
+        if(result != null && !result.hasError()) { // Si no hay errores continua el proceso de registro de orden
             // Registro de ordenes:
             Order order = new Order();
             order.setOrderNumber(UUID.randomUUID().toString());
@@ -43,7 +43,9 @@ public class OrderService {
                             .toList()
             );
 
-            this.orderRepository.save((order));
+            var saveOrder = this.orderRepository.save((order));
+
+            return mapToOrderResponse(saveOrder);
         } else {
             throw new IllegalArgumentException("Los productos no se cuentan con stock");
         }
